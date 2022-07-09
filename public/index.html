@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Short link Service</title>
+    <style>
+        :root {
+            --border-style: 1px solid rgb(212, 212, 216);
+            --main-color: rgb(83, 159, 231);
+            --success-color: rgb(0, 180, 42);
+            --content-width: 700px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            width: var(--content-width);
+            height: 40px;
+            margin: 20px 0 100px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo button {
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        header .logo button span {
+            margin-left: 3px;
+        }
+
+        header button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            line-height: 1.2;
+            border-radius: 6px;
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 200ms;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        header .logo button {
+            height: 40px;
+            padding: 15px;
+            margin-left: -15px;
+        }
+
+        header .social button {
+            width: 30px;
+            height: 30px;
+            background-color: #f4f4f5;
+        }
+
+        header .logo button:hover {
+            background-color: #f4f4f5;
+        }
+
+        header button:hover {
+            background-color: #e4e4e7;
+        }
+
+        header button:active {
+            background-color: #d4d4d8;
+        }
+
+        header button:focus {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6);
+        }
+
+        main {
+            width: var(--content-width);
+            border-radius: 5px;
+            padding: 25px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            margin-right: 15px;
+            color: #71717a;
+        }
+
+        .message {
+            position: fixed;
+            display: none;
+            align-items: center;
+            padding: 8px 15px;
+            overflow: hidden;
+            text-align: center;
+            top: 100px;
+            width: var(--content-width);
+            line-height: 2em;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            animation: fadeIn .8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        #message-success {
+            background-color: rgb(232, 255, 234);
+        }
+
+        #message-error {
+            background-color: rgb(255, 236, 232);
+        }
+
+        #message-success svg {
+            color: rgb(0, 180, 42);
+        }
+
+        #message-error svg {
+            color: rgb(245, 63, 63);
+        }
+
+        .message span {
+            margin-left: 8px;
+        }
+
+        #input > label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #input > textarea {
+            width: 100%;
+            height: 200px;
+            padding: 8px;
+            border: var(--border-style);
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+            outline: transparent solid 2px;
+            outline-offset: 2px;
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 200ms;
+        }
+
+        #input > textarea:focus {
+            border-color: var(--main-color);
+            box-shadow: var(--main-color) 0 0 0 1px;
+        }
+
+        #output > input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: var(--border-style);
+            border-radius: 5px;
+            line-height: 1.5em;
+            font-size: 14px;
+            color: #666;
+            outline: none;
+        }
+
+        #output input.active {
+            border-color: var(--success-color);
+            box-shadow: var(--success-color) 0 0 0 1px;
+            color: var(--success-color);
+            cursor: text;
+            font-weight: bold;
+        }
+
+        #options select {
+            width: 100px;
+            height: 30px;
+            border: var(--border-style);
+            border-radius: 5px;
+            padding: 5px;
+            outline: none;
+        }
+
+        #options select option {
+            padding: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #options > .time-selection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #options > .submit-btn > button {
+            width: 100px;
+            height: 30px;
+            background-color: var(--main-color);
+            border: rgb(75, 136, 194);
+            color: aliceblue;
+            border-radius: 5px;
+            padding: 5px;
+            outline: none;
+            margin-left: 10px;
+        }
+
+        #options > .submit-btn > button:hover {
+            background-color: rgb(19, 104, 185);
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="message-success" class="message">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 48 48"
+         aria-hidden="true" focusable="false">
+        <path fill="currentColor" fill-rule="evenodd" stroke="none"
+              d="M24 44c11.046 0 20-8.954 20-20S35.046 4 24 4 4 12.954 4 24s8.954 20 20 20Zm10.207-24.379a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0L22 26.172l-4.878-4.88a1 1 0 0 0-1.415 0l-1.414 1.415a1 1 0 0 0 0 1.414l7 7a1 1 0 0 0 1.414 0l11.5-11.5Z"
+              clip-rule="evenodd"></path>
+    </svg>
+    <span>PLACEHOLDER</span>
+</div>
+<div id="message-error" class="message">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 48 48"
+         aria-hidden="true" focusable="false">
+        <path fill="currentColor" fill-rule="evenodd" stroke="none"
+              d="M24 44c11.046 0 20-8.954 20-20S35.046 4 24 4 4 12.954 4 24s8.954 20 20 20Zm4.955-27.771-4.95 4.95-4.95-4.95a1 1 0 0 0-1.414 0l-1.414 1.414a1 1 0 0 0 0 1.414l4.95 4.95-4.95 4.95a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l4.95-4.95 4.95 4.95a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-4.95-4.95 4.95-4.95a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0Z"
+              clip-rule="evenodd"></path>
+    </svg>
+    <span>PLACEHOLDER</span>
+</div>
+<header>
+    <div class="logo">
+        <button>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="5" viewBox="0 0 48 48"
+                 aria-hidden="true"
+                 focusable="false" stroke-linecap="butt" stroke-linejoin="miter" class="arco-icon arco-icon-link"
+                 style="font-size: 32px;">
+                <path d="m14.1 25.414-4.95 4.95a6 6 0 0 0 8.486 8.485l8.485-8.485a6 6 0 0 0 0-8.485m7.779.707 4.95-4.95a6 6 0 1 0-8.486-8.485l-8.485 8.485a6 6 0 0 0 0 8.485"></path>
+            </svg>
+            <span>OSS.INK</span>
+        </button>
+    </div>
+    <div class="social">
+        <a href="https://github.com/realzolo">
+            <button>
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true" focusable="false" height="1em" width="1em"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+            </button>
+        </a>
+    </div>
+</header>
+<main>
+    <section id="input">
+        <label for="textarea">URL:</label>
+        <textarea id="textarea" placeholder="Please fill in your link here..."></textarea>
+        <section id="output">
+            <input placeholder='Please click on "Shorten" to create your short link.' readonly/>
+        </section>
+    </section>
+    <section id="options">
+        <div class="time-selection">
+            <label for="selection">Expiry date:</label>
+            <select id="selection">
+                <option value="3600">1 hour</option>
+                <option value="86400">1 day</option>
+                <option value="1296000">15 days</option>
+                <option value="2592000">1 month</option>
+                <option value="315360000">Long-term</option>
+            </select>
+        </div>
+        <div class="submit-btn">
+            <button>Shorten</button>
+        </div>
+    </section>
+    <script>
+        const messages = document.querySelectorAll('.message'),
+            tips = document.querySelectorAll('.message span'),
+            textarea = document.querySelector('#textarea'),
+            output = document.querySelector('#output input'),
+            selection = document.querySelector('#selection'),
+            submitBtn = document.querySelector('#options .submit-btn button');
+        const cache = new Map();
+        const bindEvent = () => {
+            submitBtn.addEventListener("click", onSubmit, false)
+            output.addEventListener("click", onCopy, false)
+        }
+        const onSubmit = async () => {
+            initState();
+            const url = textarea.value.trim(),
+                time = selection.value;
+            // check url
+            if (!checkUrl(url)) {
+                showMessage(false, "Please enter the correct link.")
+                return
+            }
+            // check cache
+            if (cache.has(url)) {
+                output.value = cache.get(url);
+                output.classList.add('active');
+                return
+            }
+            // get short url from server
+            try {
+                const response = await fetch(`/register/${encodeURIComponent(url)}/${time}`);
+                const shortLink = await response.text();
+                cache.set(url, shortLink);  // cache short url
+                output.value = shortLink;
+                output.classList.add('active');
+                hideMessage(false);
+                showMessage(true, "Short link created successfully.");
+            } catch (e) {
+                showMessage(false, "Server error.");
+            }
+        }
+
+        const onCopy = () => {
+            output.select();
+            document.execCommand("copy");
+        }
+
+        const checkUrl = (url) => {
+            const reg = /^(http|https):\/\//;
+            return reg.test(url);
+        }
+        const initState = () => {
+            hideMessage(true);
+            hideMessage(false)
+            output.classList.remove('active');
+        }
+        const hideMessage = (success) => {
+            const index = success ? 0 : 1;
+            messages[index].style.display = 'none';
+        }
+
+        const showMessage = (success, msg) => {
+            const index = success ? 0 : 1;
+            tips[index].innerText = msg;
+            messages[index].style.display = 'flex';
+        }
+        bindEvent();
+    </script>
+</main>
+</body>
+</html>
