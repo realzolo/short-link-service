@@ -11,7 +11,7 @@ const redis = new Redis();
  * @param expired The expiration time in seconds.
  * @returns The hashed url.
  */
-app.use("/register/:url/:time", async (req, res) => {
+app.use ("/register/:url/:time", async (req, res) => {
     try {
         const {url, time} = req.params;
         let hashCode = hash(decodeURIComponent(url)).toString();
@@ -51,7 +51,4 @@ app.use("/s/:key", async (req, res) => {
 
 app.use("/", express.static("public"));
 
-app.listen(3000, () => {
-    console.log("listening on port 3000");
-});
-
+export default app;
