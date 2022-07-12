@@ -1,6 +1,5 @@
 import express from "express";
 import Redis from "./db";
-import config from "./config";
 import {convert, hash} from "./util";
 
 const app = express();
@@ -27,8 +26,7 @@ app.use("/register/:url/:time", async (req, res) => {
         if (r != "OK") {
             return res.send("error");
         }
-        const shortLink = config.DOMAIN_PREFIX + "/s/" + hashCode;
-        return res.send(shortLink);
+        return res.send(hashCode);
     } catch (e) {
         console.error(e);
         return res.send("error");

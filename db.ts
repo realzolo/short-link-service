@@ -2,10 +2,11 @@ import {createClient} from "redis";
 import config from "./config";
 
 class Redis {
+    private redisUrl: string = process.env.REDIS_URL || config.REDIS_URL;
     private client: any;
 
     constructor() {
-        this.client = createClient({url: config.REDIS_URL});
+        this.client = createClient({url: this.redisUrl});
         this.client.on("error", (err: Error) => {
             console.error("Redis connection error:", err);
         });

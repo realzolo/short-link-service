@@ -115,7 +115,9 @@
             line-height: 2em;
             border: 1px solid transparent;
             border-radius: 4px;
-            animation: fadeIn .8s ease-in-out forwards;
+            animation-duration: 0.8s;
+            animation-fill-mode: forwards;
+            animation-timing-function: ease-in-out;
         }
 
         @keyframes fadeIn {
@@ -124,6 +126,15 @@
             }
             to {
                 opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
             }
         }
 
@@ -181,14 +192,25 @@
             font-size: 14px;
             color: #666;
             outline: none;
+            /*animation: animated-border 0.5s infinite;*/
         }
 
         #output input.active {
             border-color: var(--success-color);
-            box-shadow: var(--success-color) 0 0 0 1px;
             color: var(--success-color);
+            background-color: rgb(232, 255, 234);
             cursor: text;
             font-weight: bold;
+            animation: animated-border 1.5s infinite;
+        }
+
+        @keyframes animated-border {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 180, 42, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 0 3px rgba(0, 180, 42, 0.3);
+            }
         }
 
         #options select {
@@ -201,7 +223,12 @@
         }
 
         #options select option {
-            padding: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        #options select option:hover {
+            background-color: #f4f4f5;
         }
 
         #options {
@@ -309,10 +336,13 @@
             selection = document.querySelector('#selection'),
             submitBtn = document.querySelector('#options .submit-btn button');
         const cache = new Map();
+
         const bindEvent = () => {
-            submitBtn.addEventListener("click", onSubmit, false)
-            output.addEventListener("click", onCopy, false)
+            submitBtn.addEventListener("click", onSubmit, false);
+            output.addEventListener("click", onFocus, false);
+            output.addEventListener("blur", onBlur, false);
         }
+
         const onSubmit = async () => {
             initState();
             const url = textarea.value.trim(),
@@ -326,12 +356,14 @@
             if (cache.has(url)) {
                 output.value = cache.get(url);
                 output.classList.add('active');
+                showMessage(false, "This link has been shortened.")
                 return
             }
             // get short url from server
             try {
                 const response = await fetch(`/register/${encodeURIComponent(url)}/${time}`);
-                const shortLink = await response.text();
+                const hashCode = await response.text();
+                const shortLink = `${location.origin}/s/${hashCode}`;
                 cache.set(url, shortLink);  // cache short url
                 output.value = shortLink;
                 output.classList.add('active');
@@ -342,30 +374,43 @@
             }
         }
 
-        const onCopy = () => {
+        const onFocus = () => {
             output.select();
             document.execCommand("copy");
+            if (output.value) {
+                output.removeAttribute("readonly");
+                showMessage(true, "Short link copied successfully.");
+            }
+        }
+
+        const onBlur = () => {
+            output.setAttribute("readonly", "readonly");
+            hideMessage(true);
         }
 
         const checkUrl = (url) => {
             const reg = /^(http|https):\/\//;
             return reg.test(url);
         }
+
         const initState = () => {
             hideMessage(true);
             hideMessage(false)
             output.classList.remove('active');
         }
-        const hideMessage = (success) => {
-            const index = success ? 0 : 1;
-            messages[index].style.display = 'none';
-        }
 
         const showMessage = (success, msg) => {
             const index = success ? 0 : 1;
             tips[index].innerText = msg;
+            messages[index].style.animationName = 'fadeIn';
             messages[index].style.display = 'flex';
         }
+
+        const hideMessage = (success) => {
+            const index = success ? 0 : 1;
+            messages[index].style.animationName = 'fadeOut';
+        }
+
         bindEvent();
     </script>
 </main>
