@@ -11,7 +11,7 @@ const redis = new Redis();
  * @param expired The expiration time in seconds.
  * @returns The hashed url.
  */
-app.use ("/register/:url/:time", async (req, res) => {
+app.use ("/api/register/:url/:time", async (req, res) => {
     try {
         const {url, time} = req.params;
         let hashCode = hash(decodeURIComponent(url)).toString();
@@ -36,7 +36,7 @@ app.use ("/register/:url/:time", async (req, res) => {
 /**
  * Find the corresponding url by key.
  */
-app.use("/s/:key", async (req, res) => {
+app.use("/api/s/:key", async (req, res) => {
     const {key} = req.params;
     const url = await redis.getValue(key);
     if (!url) {
